@@ -26,12 +26,14 @@
  * @category   Mage
  * @package    Mage_Core
  */
-class Mage_Core_Exception extends Exception {
+class Mage_Core_Exception extends Exception
+{
 
     protected $_messages = array();
     protected $_lastException = null;
 
-    public function addMessage(Mage_Core_Model_Message_Abstract $message) {
+    public function addMessage(Mage_Core_Model_Message_Abstract $message) 
+    {
         if (!isset($this->_messages[$message->getType()])) {
             $this->_messages[$message->getType()] = array();
         }
@@ -39,10 +41,11 @@ class Mage_Core_Exception extends Exception {
         return $this;
     }
 
-    public function getMessages($type = '') {
+    public function getMessages($type = '') 
+    {
         if ('' == $type) {
             $arrRes = array();
-            foreach ($this->_messages as $messageType => $messages) {
+            foreach ($this->_messages as $messages) {
                 $arrRes = array_merge($arrRes, $messages);
             }
             return $arrRes;
@@ -57,7 +60,8 @@ class Mage_Core_Exception extends Exception {
      * @param bool $append
      * @return Mage_Core_Exception
      */
-    public function setMessage($message, $append = false) {
+    public function setMessage($message, $append = false) 
+    {
         if ($append) {
             $this->message .= $message;
         } else {
@@ -68,9 +72,10 @@ class Mage_Core_Exception extends Exception {
 
     /**
      * Additions by ProxiBlue to log exceptions with new relic.
-     * 
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
-    public function __construct($message = '', $code = 0, $previous = null) {
+    public function __construct($message = '', $code = 0, $previous = null) 
+    {
         parent::__construct($message, $code, $previous);
         if ($this instanceof Mage_Core_Model_Store_Exception || $this instanceof ProxiBlue_NewRelic_Exception) {
             // this is a store or newrelic module exception
@@ -81,12 +86,14 @@ class Mage_Core_Exception extends Exception {
             $stackTrace = self::getTrace();
             if (is_array($stackTrace)) {
                 $maxTraceItterations = 100;
-                // 100 seems like a safe test. If this test works, a config option would be created to allow users to set this.
+                // 100 seems like a safe test. If this test works, a config 
+                // option would be created to allow users to set this.
                 foreach ($stackTrace as $_trace) {
-                    if($maxTraceItterations == 0) {
+                    if ($maxTraceItterations == 0) {
                         break;
                     }
-                    if (is_array($_trace) && array_key_exists('class', $_trace) && $_trace['class'] == 'Mage_Core_Model_Config') {
+                    if (is_array($_trace) && array_key_exists('class', $_trace) 
+                        && $_trace['class'] == 'Mage_Core_Model_Config') {
                         // some config issue, log it direct
                         ProxiBlue_NewRelic_Model_Log_Exception::pushEvent($this, false);
                         return $this;
@@ -94,9 +101,11 @@ class Mage_Core_Exception extends Exception {
                     $maxTraceItterations--;
                 }
             }
-            $newRelic = mage::getModel('newrelic/log_Exception');
+            $newRelic = Mage::getModel('newrelic/log_Exception');
             // make sure we have an object here!
-            if (is_object($newRelic) && $newRelic instanceof ProxiBlue_NewRelic_Model_Log_Exception && $newRelic->getEnabled()) {
+            if (is_object($newRelic) && 
+                $newRelic instanceof ProxiBlue_NewRelic_Model_Log_Exception && 
+                $newRelic->getEnabled()) {
                 $newRelic->recordEvent($this);
             }
         }
